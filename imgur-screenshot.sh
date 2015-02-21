@@ -93,30 +93,30 @@ function notify() {
 }
 
 function take_screenshot() {
-  echo "Please select area"
   is_mac || sleep 0.1 # https://bbs.archlinux.org/viewtopic.php?pid=1246173#p1246173
 
   screenshot_select_command=${screenshot_select_command/\%img/$1}
   screenshot_window_command=${screenshot_window_command/\%img/$1}
 
-  shot_err="$($screenshot_select_command &>/dev/null)" #takes a screenshot with selection
-  if [ "$?" != "0" ]; then
-    if [ "$shot_err" == "giblib error: no image grabbed" ]; then # scrot specific
-      echo "You cancelled the selection. Exiting."
-      exit 1
-    else
-      echo "$shot_err" >&2
-      echo "Couldn't make selective shot (mouse trapped?)."
-      echo "Trying to grab active window instead."
+  if [ "$screenshot_window" = "true" ]; then
+      echo "Please select window or region"
+      # Take screenshot of window or region
+      shot_err="$($screenshot_select_command &>/dev/null)" #takes a screenshot with selection
+      if [ "$shot_err" == "giblib error: no image grabbed" ]; then # scrot specific
+          echo "You cancelled the selection. Exiting."
+          exit 1
+      fi
+  else
+      # Take screenshot of screen
       if ! ($screenshot_window_command &>/dev/null); then
-        echo "Error for image '$1': '$shot_err'. For more information visit https://github.com/jomo/imgur-screenshot#troubleshooting" | tee "$log_file"
-        notify error "Something went wrong :(" "Information has been logged"
-        exit 1
+          echo "Error for image '$1': '$shot_err'. For more information visit https://github.com/jomo/imgur-screenshot#troubleshooting" | tee "$log_file"
+          notify error "Something went wrong :(" "Information has been logged"
+          exit 1
       fi
-      if "$edit_on_selection_fail" = "true"; then
-        edit="true"
-      fi
-    fi
+  fi
+
+  if "$edit_on_selection_fail" = "true"; then
+      edit="true"
   fi
 }
 
@@ -326,7 +326,7 @@ while [ $# != 0 ]; do
   case "$1" in
   -h | --help)
     echo "usage: $0 [--connect | --check | [-v | --version] | [-h | --help] ] |"
-    echo "  [[-o | --open=true|false] [-e | --edit=true|false] [-l | --login=true|false] [--keep_file=true|false] [file]]"
+    echo "  [[-o | --open=true|false] [-e | --edit=true|false] [-l | --login=true|false] [--keep_file=true|false] [-w | --window] [file]]"
     echo ""
     echo "  -h, --help                show this help, exit"
     echo "  -v, --version             show current version, exit"
@@ -336,6 +336,7 @@ while [ $# != 0 ]; do
     echo "  -e, --edit=true|false     override 'edit' config. -e implies true"
     echo "  -l, --login=true|false    override 'login' config. -l implies true"
     echo "  -k, --keep=true|false     override 'keep_file' config. -k implies true"
+    echo "  -w, --window              take screenshot of window or selection (scrot -s)"
     echo "  file                      upload file isntead of taking a screenshot"
     exit 0
     ;;
@@ -372,6 +373,9 @@ while [ $# != 0 ]; do
     ;;
   --keep_file=false)
     keep_file="false"
+    ;;
+  -w | --window)
+    screenshot_window="true"
     ;;
   *)
     upload_file="$1"
