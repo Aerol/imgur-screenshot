@@ -300,6 +300,28 @@ function handle_upload_error() {
   notify error "Upload failed :(" "$1"
 }
 
+function multi_upload() {
+    echo "multi_upload called"
+    if [ "$login" = "true" ]; then
+        for i in $1; do
+            upload_authenticated_image "$i"
+        done
+    else
+        for i in $1; do
+            upload_anonymous_image "$i"
+        done
+    fi
+}
+
+function single_upload() {
+    echo "single_upload called"
+    if [ "$login" = "true" ]; then
+        upload_authenticated_image "$1"
+    else
+        upload_anonymous_image "$1"
+    fi
+}
+
 # determine the script's location
 which="$(which "$0")"
 origin_dir="$( dirname "$(readlink "$which" || echo "$which")")"
@@ -405,7 +427,6 @@ fi
 
 # get full path
 for i in $img_file; do
-    # Redo so we don't append with filenames and full path+filenames
     files="$files $(cd "$( dirname "$i")" && echo "$(pwd)/$(basename "$i")")"
 done
 img_file=$files
@@ -428,14 +449,10 @@ for i in $img_file; do
     fi
 done
 
-if [ "$login" = "true" ]; then
-    for i in $img_file; do
-        upload_authenticated_image "$i"
-    done
+if [ $(($len)) -gt 0 ]; then
+    multi_upload $img_file
 else
-    for i in $img_file; do
-        upload_anonymous_image "$i"
-    done
+    single_upload $img_file
 fi
 
 # delete file if configured
