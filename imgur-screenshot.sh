@@ -378,7 +378,10 @@ while [ $# != 0 ]; do
     screenshot_window="true"
     ;;
   *)
-    upload_file="$1"
+    len=$(($#-1))
+    inputs=${@:1:$len}
+    upload_file="$@"
+    break
     ;;
   esac
   shift
@@ -401,8 +404,11 @@ else
 fi
 
 # get full path
-img_file="$(cd "$( dirname "$img_file")" && echo "$(pwd)/$(basename "$img_file")")"
-
+for i in $img_file; do
+    # Redo so we don't append with filenames and full path+filenames
+    files="$files $(cd "$( dirname "$i")" && echo "$(pwd)/$(basename "$i")")"
+done
+img_file=$files
 # open image in editor if configured
 if [ "$edit" = "true" ]; then
   edit_command=${edit_command/\%img/$img_file}
@@ -415,15 +421,21 @@ if [ "$edit" = "true" ]; then
 fi
 
 # check if file exists
-if [ ! -f "$img_file" ]; then
-  echo "file '$img_file' doesn't exist !"
-  exit 1
-fi
+for i in $img_file; do
+    if [ ! -f "$i" ]; then
+        echo "file '$i' doesn't exist !"
+        exit 1
+    fi
+done
 
 if [ "$login" = "true" ]; then
-  upload_authenticated_image "$img_file"
+    for i in $img_file; do
+        upload_authenticated_image "$i"
+    done
 else
-  upload_anonymous_image "$img_file"
+    for i in $img_file; do
+        upload_anonymous_image "$i"
+    done
 fi
 
 # delete file if configured
