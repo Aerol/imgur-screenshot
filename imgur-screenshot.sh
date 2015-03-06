@@ -348,7 +348,7 @@ while [ $# != 0 ]; do
   case "$1" in
   -h | --help)
     echo "usage: $0 [--connect | --check | [-v | --version] | [-h | --help] ] |"
-    echo "  [[-o | --open=true|false] [-e | --edit=true|false] [-l | --login=true|false] [--keep_file=true|false] [-w | --window] [file]]"
+    echo "  [[-o | --open=true|false] [-e | --edit=true|false] [-l | --login=true|false] [--keep_file=true|false] [-u | --update] [-w | --window] [file]]"
     echo ""
     echo "  -h, --help                show this help, exit"
     echo "  -v, --version             show current version, exit"
@@ -358,6 +358,7 @@ while [ $# != 0 ]; do
     echo "  -e, --edit=true|false     override 'edit' config. -e implies true"
     echo "  -l, --login=true|false    override 'login' config. -l implies true"
     echo "  -k, --keep=true|false     override 'keep_file' config. -k implies true"
+    echo "  -u, --update              check for update"
     echo "  -w, --window              take screenshot of window or selection (scrot -s)"
     echo "  file                      upload file isntead of taking a screenshot"
     exit 0
@@ -395,6 +396,10 @@ while [ $# != 0 ]; do
     ;;
   --keep_file=false)
     keep_file="false"
+    ;;
+  -u | --update)
+    check_for_update
+    exit 0
     ;;
   -w | --window)
     screenshot_window="true"
