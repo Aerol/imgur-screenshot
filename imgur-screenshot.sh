@@ -405,19 +405,21 @@ while [ $# != 0 ]; do
             screenshot_window="true"
             ;;
         *)
-            upload_file=1
             break
             ;;
     esac
     shift
 done
+
+# Maybe going to put the whole secondary argument parsing into a function?
 title_arg=0
 album_arg=0
 echo "entering second stage argument parsing"
 for i in "$@"; do
     if [ -f "$i" ]; then
-        upload_file="$upload_file $i"
-        echo "$files"
+        echo "found $i"
+        upload_file="$upload_file$i "
+        echo "list of files $upload_file"
     fi
 
     if [ $title_arg -eq 1 ]; then
@@ -459,10 +461,8 @@ else
 fi
 
 # get full path
-for i in "$img_file"; do
-    echo $i
+for i in $img_file; do
     files="$files $(cd "$( dirname "$i")" && echo "$(pwd)/$(basename "$i")")"
-    echo $files
 done
 img_file="$files"
 # open image in editor if configured
@@ -477,7 +477,7 @@ if [ "$edit" = "true" ]; then
 fi
 
 # check if file exists
-for i in "$img_file"; do
+for i in $img_file; do
     if [ ! -f "$i" ]; then
         echo "file '$i' doesn't exist !"
         exit 1
