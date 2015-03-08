@@ -1,5 +1,6 @@
 #!/bin/bash
-# https://github.com/jomo/imgur-screenshot
+# https://github.com/Aerol/imgur-screenshot
+# fork of https://github.com/jomo/imgur-screenshot
 # https://imgur.com/apps
 
 function is_mac() {
@@ -411,15 +412,18 @@ while [ $# != 0 ]; do
     shift
 done
 
-# Maybe going to put the whole secondary argument parsing into a function?
+# Maybe put the whole secondary argument parsing into a function?
+# Maybe should use an array for upload_file?
+# Maybe put set album argument in main?
 title_arg=0
 album_arg=0
-echo "entering second stage argument parsing"
+len=0
 for i in "$@"; do
     if [ -f "$i" ]; then
         echo "found $i"
         upload_file="$upload_file$i "
         echo "list of files $upload_file"
+        ((len++))
     fi
 
     if [ $title_arg -eq 1 ]; then
@@ -442,6 +446,7 @@ for i in "$@"; do
             ;;
     esac
 done
+echo $len
 
 
 if [ "$login" = "true" ]; then
@@ -484,7 +489,7 @@ for i in $img_file; do
     fi
 done
 
-if [ $(($len)) -gt 0 ]; then
+if [ $len -gt 1 ]; then
     multi_upload $img_file
 else
     single_upload $img_file
