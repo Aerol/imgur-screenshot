@@ -294,6 +294,7 @@ function handle_upload_success() {
     fi
 }
 
+
 function handle_upload_error() {
     error="Upload failed: \"$1\""
     echo "$error"
@@ -304,11 +305,11 @@ function handle_upload_error() {
 function multi_upload() {
     echo "multi_upload called"
     if [ "$login" = "true" ]; then
-        for i in "$1"; do
+        for i in $@; do
             upload_authenticated_image "$i"
         done
     else
-        for i in "$1"; do
+        for i in $@; do
             upload_anonymous_image "$i"
         done
     fi
@@ -321,15 +322,6 @@ function single_upload() {
     else
         upload_anonymous_image "$1"
     fi
-}
-
-function blah() {
-    echo "blah called"
-    for i in "$1"; do
-        echo "$i"
-        echo "what the hell"
-    done
-    echo "loop done"
 }
 
 # determine the script's location
@@ -423,6 +415,7 @@ done
 
 # Maybe put the whole secondary argument parsing into a function?
 # Maybe put set album argument in main?
+# Put upload_file into an array...?
 title_arg=0
 album_arg=0
 len=0
@@ -453,13 +446,6 @@ for i in "$@"; do
             ;;
     esac
 done
-echo $len
-#for key in ${!image_title[@]}; do
-#    echo ${key} ${image_title[${key}]}
-#done
-echo ${#image_title[@]}
-
-
 
 if [ "$login" = "true" ]; then
     # load before changing directory
@@ -478,10 +464,11 @@ else
 fi
 
 # get full path
+files=()
 for i in $img_file; do
-    files="$files $(cd "$( dirname "$i")" && echo "$(pwd)/$(basename "$i")")"
+    files+=("$(cd "$( dirname "$i")" && echo "$(pwd)/$(basename "$i")")")
 done
-img_file="$files"
+img_file=$files
 
 # open image in editor if configured
 if [ "$edit" = "true" ]; then
@@ -502,11 +489,8 @@ for i in $img_file; do
     fi
 done
 
-blah $img_file
-read adfag
-
 if [ $len -gt 1 ]; then
-    multi_upload $img_file
+    multi_upload "${files[@]}"
 else
     single_upload $img_file
 fi
