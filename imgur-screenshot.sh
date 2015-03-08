@@ -236,7 +236,7 @@ function fetch_account_info() {
 
 function upload_authenticated_image() {
     echo "Uploading '$1'..."
-    response="$(curl --connect-timeout "$upload_connect_timeout" -m "$upload_timeout" --retry "$upload_retries" -fsSL --stderr - -F "image=@$1" -H "Authorization: Bearer $access_token" https://api.imgur.com/3/image.xml)"
+    response="$(curl --connect-timeout "$upload_connect_timeout" -m "$upload_timeout" --retry "$upload_retries" -fsSL --stderr - -F "image=@$1" -F "title=$image_title" -F "album=$album_name" -H "Authorization: Bearer $access_token" https://api.imgur.com/3/image.xml)"
     # imgur response contains success="1" when successful
     if [[ "$response" == *"success=\"1\""* ]]; then
         # cutting the url from the xml response
@@ -321,6 +321,15 @@ function single_upload() {
     else
         upload_anonymous_image "$1"
     fi
+}
+
+function blah() {
+    echo "blah called"
+    for i in "$1"; do
+        echo "$i"
+        echo "what the hell"
+    done
+    echo "loop done"
 }
 
 # determine the script's location
@@ -413,40 +422,43 @@ while [ $# != 0 ]; do
 done
 
 # Maybe put the whole secondary argument parsing into a function?
-# Maybe should use an array for upload_file?
 # Maybe put set album argument in main?
 title_arg=0
 album_arg=0
 len=0
 for i in "$@"; do
     if [ -f "$i" ]; then
-        echo "found $i"
+        key="$i"
         upload_file="$upload_file$i "
-        echo "list of files $upload_file"
         ((len++))
     fi
 
     if [ $title_arg -eq 1 ]; then
-        echo $i
+        key=$(cd "$( dirname "$key")" && echo "$(pwd)/$(basename "$key")")
+        image_title["$key"]="$i"
         title_arg=0
     fi
     if [ $album_arg -eq 1 ]; then
-        echo $i
+        album_title="$i"
         album_arg=0
     fi
 
     case $i in
         -t|--title)
+            declare -A image_title
             title_arg=1
-            echo "title found"
             ;;
         -a|--album)
             album_arg=1
-            echo "album found"
             ;;
     esac
 done
 echo $len
+#for key in ${!image_title[@]}; do
+#    echo ${key} ${image_title[${key}]}
+#done
+echo ${#image_title[@]}
+
 
 
 if [ "$login" = "true" ]; then
@@ -470,6 +482,7 @@ for i in $img_file; do
     files="$files $(cd "$( dirname "$i")" && echo "$(pwd)/$(basename "$i")")"
 done
 img_file="$files"
+
 # open image in editor if configured
 if [ "$edit" = "true" ]; then
     edit_command=${edit_command/\%img/$img_file}
@@ -488,6 +501,9 @@ for i in $img_file; do
         exit 1
     fi
 done
+
+blah $img_file
+read adfag
 
 if [ $len -gt 1 ]; then
     multi_upload $img_file
