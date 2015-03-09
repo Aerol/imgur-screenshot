@@ -236,7 +236,7 @@ function fetch_account_info() {
 
 function upload_authenticated_image() {
     echo "Uploading '$1'..."
-    response="$(curl --connect-timeout "$upload_connect_timeout" -m "$upload_timeout" --retry "$upload_retries" -fsSL --stderr - -F "image=@$1" -F "title=$image_title" -F "album=$album_name" -H "Authorization: Bearer $access_token" https://api.imgur.com/3/image.xml)"
+    response="$(curl --connect-timeout "$upload_connect_timeout" -m "$upload_timeout" --retry "$upload_retries" -fsSL --stderr - -F "image=@$1" -F "title=$2" -F "album=$3" -H "Authorization: Bearer $access_token" https://api.imgur.com/3/image.xml)"
     # imgur response contains success="1" when successful
     if [[ "$response" == *"success=\"1\""* ]]; then
         # cutting the url from the xml response
@@ -302,25 +302,39 @@ function handle_upload_error() {
     notify error "Upload failed :(" "$1"
 }
 
-function multi_upload() {
-    echo "multi_upload called"
-    if [ "$login" = "true" ]; then
+function upload() {
+    if [ $len -gt 1 ]; then
+        #multi upload
         for i in $@; do
-            upload_authenticated_image "$i"
+            if [ ${#image_title[@]} -ge 1 ]; then
+                if [ "$login" == "true" ]; then
+                    upload_authenticated_image "$i" "${image_title[$i]}"
+                else
+                    upload_anonymous_image "$i" "${image_title[$i]}"
+                fi
+            else
+                if [ "$login" == "true" ]; then
+                    upload_authenticated_image "$i"
+                else
+                    upload_anonymous_image "$i"
+                fi
+            fi
         done
     else
-        for i in $@; do
-            upload_anonymous_image "$i"
-        done
-    fi
-}
-
-function single_upload() {
-    echo "single_upload called"
-    if [ "$login" = "true" ]; then
-        upload_authenticated_image "$1"
-    else
-        upload_anonymous_image "$1"
+        #single upload
+        if [ ${#image_title[@]} -ge 1 ]; then
+            if [ "$login" == "true" ]; then
+                upload_authenticated_image "$1" "${image_title[$1]}"
+            else
+                upload_anonymous_image "$1" "${image_title[$1]}"
+            fi
+        else
+            if [ "$login" == "true" ]; then
+                upload_authenticated_image "$1"
+            else
+                upload_anonymous_image "$1"
+            fi
+        fi
     fi
 }
 
@@ -489,11 +503,7 @@ for i in $img_file; do
     fi
 done
 
-if [ $len -gt 1 ]; then
-    multi_upload "${files[@]}"
-else
-    single_upload $img_file
-fi
+upload "${files[@]}"
 
 # delete file if configured
 if [ "$keep_file" = "false" ] && [ -z "$1" ]; then
