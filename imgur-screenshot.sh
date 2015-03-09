@@ -253,7 +253,7 @@ function upload_authenticated_image() {
 
 function upload_anonymous_image() {
     echo "Uploading '$1'..."
-    response="$(curl --connect-timeout "$upload_connect_timeout" -m "$upload_timeout" --retry "$upload_retries" -fsSL --stderr - -F "image=@$1" -F "key=$imgur_anon_key" https://imgur.com/api/upload.xml)"
+    response="$(curl --connect-timeout "$upload_connect_timeout" -m "$upload_timeout" --retry "$upload_retries" -fsSL --stderr - -F "image=@$1" -F "title=$2" -F "ablum=$3" -F "key=$imgur_anon_key" https://imgur.com/api/upload.xml)"
 
     # imgur response contains stat="ok" when successful
     if [[ "$response" == *"stat=\"ok\""*  ]]; then
