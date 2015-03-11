@@ -14,7 +14,7 @@ Features
 * Edit image before uploading
 * Upload anonymously or to your imgur account
 * Copy link to clipboard
-* Open uplaoded image
+* Open uploaded image
 * Delete image from disk after upload
 * Filenames, links and **deletion links** are stored
 * Get notifications about updates
