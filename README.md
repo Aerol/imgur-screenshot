@@ -258,4 +258,4 @@ Contribute
 * Report [issues](https://github.com/jomo/imgur-screenshot/issues)
 * Submit feature request
 * Make a pull request
-* Buy me a beer: [`1jomojdTww1vnNwvseLrKgTENZoojQ3Um`](https://tinyurl.com/jomo-imgur)
+* Buy me a beer: [`1DkuhsBLipitcCHKcDHhpxUYPiFUBD4nvf`]
